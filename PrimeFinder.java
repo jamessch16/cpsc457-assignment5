@@ -23,15 +23,6 @@ class SharedIntegerArray {
 		primeNumbers.add(num);
 	}
 
-	public synchronized int get(int index) {
-		/*
-		Gets the number at the specified index in the shared array.
-		@param index The index to get.
-		@return The number at the given index.
-		*/
-		return primeNumbers.get(index);
-	}
-
 	public synchronized void sort() {
 		/*
 		Sorts the shared array in ascending order.
