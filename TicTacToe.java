@@ -229,7 +229,6 @@ class Player extends Thread {
 
         // Repeat until a valid move is made
         do {
-
             randMove = randomSequence.nextInt(NUM_MOVES); 
             if (sharedBoard.makeMove(randMove, ID) == 0)  moveSuccessful = true;
         } while (!moveSuccessful);
