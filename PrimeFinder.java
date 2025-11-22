@@ -3,12 +3,7 @@ import java.util.ArrayList;
 
 /**
  * CPSC 457 Fall 2025.
- * Example starter code for Assignment 5 Part 2. You may build off of this provided code or start from scratch.
- * Most of the provided example starter code is taken from Levi Meston's PrimeFinder skeleton code.
- * 
- * NOTE: The rest of Levi's prime finder exercise was not intended to follow the shared buffer constraints of this assignment. 
- * It is your responsibility to ensure that your implementation follows the assignment specifications.
- * Please ensure you also take note of all of the other constraints in the specification.
+ * Code modified from Levi Meston's Prime Finder Skeleton code.
  */
 
 class SharedIntegerArray {
@@ -57,6 +52,14 @@ class SharedIntegerArray {
 		for (int i = 0; i < primeNumbers.size(); i++) {
 			System.out.print(i + " ");
 		}
+	}
+
+	public synchronized int size() {
+		/*
+		Returns the number of elements in the shared array.
+		@return The number of elements in the shared array.
+		*/
+		return primeNumbers.size();
 	}
 }
 
@@ -174,37 +177,48 @@ public class PrimeFinder {
 		// TODO Singleton
 		
 		// Create threads with searching the subranges
+		int threadLowerBound = min_bound;
+		int threadUpperBound;
+
 		for (int thread_index = 0; thread_index < thread_count; thread_index++) {
 			// If there's a remainder, we'll equally distribute it across the threads. 
-
-			int threadLowerBound = -1;
-			int threadUpperBound = -1;
 
 			// Calculate bounds the thread searches
 			if (remainder > 0) {
 				remainder--;
-				threadLowerBound = min_bound + thread_index * nums_per_thread + Math.min(thread_index, remainder);	// TODO FIX INDEXING
-				threadUpperBound = min_bound + (thread_index + 1) * nums_per_thread
+				threadUpperBound = threadLowerBound + nums_per_thread;
 			}
 			else {
-				threadLowerBound = min_bound + thread_index * nums_per_thread + Math.min(thread_index, remainder);	// TODO FIX INDEXING
-				threadUpperBound = min_bound + (thread_index + 1) * nums_per_thread + Math.min(thread_index + 1, remainder) - 1;
+				threadUpperBound = threadLowerBound + nums_per_thread - 1;
 			}
 
 			// Create and add thread to list
-			threads.add(new PrimeFinderThread(		// TODO FIX INDEXING
-				min_bound + thread_index * nums_per_thread + Math.min(thread_index, remainder),
-				min_bound + (thread_index + 1) * nums_per_thread + Math.min(thread_index + 1, remainder) - 1,
-				sharedPrimes
-			));
+			PrimeFinderThread thread = new PrimeFinderThread(threadLowerBound, threadUpperBound, sharedPrimes);
 
-			System.out.println("Thread " + thread_index + " searching range: [" +
-				(min_bound + thread_index * nums_per_thread + Math.min(thread_index, remainder)) + ", " +
-				(min_bound + (thread_index + 1) * nums_per_thread + Math.min(thread_index + 1, remainder) - 1 + "]")
-			);
+			thread.start();
+			threads.add(thread);
+
+			System.out.println("Thread " + thread_index + " searching range: [" + threadLowerBound + ", " + threadUpperBound + "]");
+
+			// Update lower bound for next thread
+			threadLowerBound = threadUpperBound + 1;
 		}
 
 		// Wait on all threads to finish
+		for (PrimeFinderThread thread : threads) {
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace(); // TODO Handle properly
+			}
+		}
+
+		// Sort and print results
+		System.out.println("Main Thread: All workers finished. Primes found:\n");
+		sharedPrimes.sort();
+		sharedPrimes.print();
+
+		System.out.println("\n\nMain Thread: " + sharedPrimes.size() + " prime numbers found.");
 	}
 	
 }
