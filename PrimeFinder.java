@@ -67,8 +67,6 @@ class PrimeFinderThread extends Thread {
 		if (lowerBound > upperBound) {
 			throw new IllegalArgumentException("Lower bound must be less than or equal to upper bound.");
 		}
-
-		// TODO VALIDATE INPUTS
 		
 		this.lowerBound = lowerBound;
 		this.upperBound = upperBound;
@@ -106,14 +104,7 @@ public class PrimeFinder {
 		}
 		return true;
 	}
-	
-	/**
-	 * Most of the provided example starter code is taken from Levi Meston's Prime Finder Skeleton code.
-	 * 
-	 * NOTE: The rest of Levi's prime finder exercise was not intended to follow the shared buffer constraints of this assignment.
-	 * It is your responsibility to ensure that your implementation follows the assignment specifications.
-	 * Additionally, please ensure you also take note of all of the other constraints in the specification.
-	 */
+
 	public static void main(String [] args) {
 
 		final int MIN_BOUND_ARG = 0;
@@ -197,7 +188,7 @@ public class PrimeFinder {
 			try {
 				thread.join();
 			} catch (InterruptedException e) {
-				e.printStackTrace(); // TODO Handle properly
+				e.printStackTrace();
 			}
 		}
 

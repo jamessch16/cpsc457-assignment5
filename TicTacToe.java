@@ -262,8 +262,6 @@ class Player extends Thread {
 
 class TicTacToe {
 
-
-
     public static void main(String args[]) {
 
         Shared shared = Shared.getInstance();
