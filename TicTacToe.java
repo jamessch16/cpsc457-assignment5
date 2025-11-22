@@ -15,7 +15,14 @@ class Shared {       // TODO does this have to be named Shared and implemented a
     private static final char PLAYER2_MOVE = 'O';
     private static final char EMPTY = '-';
 
+    static {
+        instance = new Shared();
+    }
+
     private Shared() {
+        /*
+        Private constructor for singleton pattern. Initializes the board and turn.
+        */
         if (instance != null) {
             throw new IllegalStateException("Use getInstance() to create Board instance");
         }
@@ -29,6 +36,11 @@ class Shared {       // TODO does this have to be named Shared and implemented a
     }
 
     public static Shared getInstance() {
+        /*
+        Returns the singleton instance of the shared board.
+        @return The singleton instance of the shared board.
+        */
+
         if (instance == null) {
             instance = new Shared();
         }
@@ -36,26 +48,66 @@ class Shared {       // TODO does this have to be named Shared and implemented a
         return instance;
     }
 
-    public void printBoard() {
-        System.out.println("TODO HEADER HERE");
+    public synchronized void printBoard(int turnPlayer) {
+        /*
+        Prints the current state of the board.
+        @param turnPlayer The player whose turn it is (for the header)
+        */
+
+        // print header
+        if (boardEmpty()) {
+            System.out.println("Initial Board:");
+        } 
+        else if (turnPlayer == 1) {
+            System.out.println("Player " + PLAYER1_MOVE + "'s Turn:");
+        }
+        else if (turnPlayer == 2) {
+            System.out.println("Player " + PLAYER2_MOVE + "'s Turn:");
+        }
+
+        // print board
         System.out.println("-------------");
         System.out.println("| " + board[0] + " | " + board[1] + " | " + board[2] + " |");
         System.out.println("-------------");
         System.out.println("| " + board[3] + " | " + board[4] + " | " + board[5] + " |");
         System.out.println("-------------"); 
         System.out.println("| " + board[6] + " | " + board[7] + " | " + board[8] + " |");
-        System.out.println("-------------");
+        System.out.println("-------------\n");
     }
 
     public synchronized void setTurn(int turn) {
+        /*
+        Sets the current turn to the given player ID.
+        @param turn The value to set turn to
+        */
+
         this.turn = turn;
     }
 
     public synchronized int getTurn() {
+        /* 
+        Gets the current turn.
+        @return The value of turn
+        */
         return turn;
     }
 
-    public int checkBoard() {
+    public synchronized boolean boardEmpty () {
+        /*
+        Checks if the board is empty.
+        @return true if the board is empty, false otherwise.
+        */
+
+        for (int i = 0; i < 9; i++) {
+            if (board[i] != EMPTY) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public synchronized int checkBoard() {
         /*
         Checks the board for a winner
 
@@ -64,6 +116,8 @@ class Shared {       // TODO does this have to be named Shared and implemented a
         0 if the game is still ongoing
         1 if the X player won
         2 if the O player won
+
+        @return The game state as described above.
         */
 
         // Check rows and columns for a player 1 win
@@ -74,8 +128,7 @@ class Shared {       // TODO does this have to be named Shared and implemented a
             }
 
             // Check columns
-            if (board[0 * 3 + i] != PLAYER1_MOVE && board[1 * 3 + i] == PLAYER1_MOVE && board[2 * 3 + i] == PLAYER1_MOVE) {
-                return 1;
+            if (board[0 * 3 + i] == PLAYER1_MOVE && board[1 * 3 + i] == PLAYER1_MOVE && board[2 * 3 + i] == PLAYER1_MOVE) {                return 1;
             }
         }
 
@@ -87,7 +140,7 @@ class Shared {       // TODO does this have to be named Shared and implemented a
             }
 
             // Check columns
-            if (board[0 * 3 + i] != PLAYER2_MOVE && board[1 * 3 + i] == PLAYER2_MOVE && board[2 * 3 + i] == PLAYER2_MOVE) {
+            if (board[0 * 3 + i] == PLAYER2_MOVE && board[1 * 3 + i] == PLAYER2_MOVE && board[2 * 3 + i] == PLAYER2_MOVE) {
                 return 2;
             }
         }
@@ -177,7 +230,7 @@ class Player extends Thread {
         // Repeat until a valid move is made
         do {
 
-            randMove = randomSequence.nextInt(NUM_MOVES + 1); 
+            randMove = randomSequence.nextInt(NUM_MOVES); 
             if (sharedBoard.makeMove(randMove, ID) == 0)  moveSuccessful = true;
         } while (!moveSuccessful);
     }
@@ -221,6 +274,7 @@ class TicTacToe {
         int turnPlayer = 1;
         boolean gameOver = false;
         
+        // initialize game
         shared.setTurn(0); 
         player1.start();
         player2.start();
@@ -228,18 +282,16 @@ class TicTacToe {
         // game loop
         while (!gameOver) { 
 
-            // wait for the thread's turn
-            while (shared.getTurn() != 0) {
-                // TODO 
-            }
+            // busy wait for the thread's turn
+            while (shared.getTurn() != 0) {}
 
-            shared.printBoard();
+            shared.printBoard(3 - turnPlayer);
 
             // Check if game is over
             gameState = shared.checkBoard();
             if (gameState != 0) {
-                if (gameState > 0)  System.out.println("WINNER: Player " + gameState + " wins!  :D");
-                else System.out.println("DRAW!");
+                if (gameState > 0)  System.out.println("WINNER: Player " + gameState + " wins!  :D\n");
+                else                System.out.println("DRAW!\n");
 
                 player1.interrupt();
                 player2.interrupt();
