@@ -67,7 +67,7 @@ class PrimeFinderThread extends Thread {
 		if (lowerBound > upperBound) {
 			throw new IllegalArgumentException("Lower bound must be less than or equal to upper bound.");
 		}
-		
+
 		// TODO VALIDATE INPUTS
 		
 		this.lowerBound = lowerBound;
@@ -155,8 +155,6 @@ public class PrimeFinder {
 		if (thread_count > (max_bound - min_bound + 1)) {
 			thread_count = max_bound - min_bound + 1;
 		}
-
-		// TODO handle case that bounds are negative ie lower < 0 orupper < 0
 
 		// Create thread array and shared array
 		ArrayList<PrimeFinderThread> threads = new ArrayList<>(thread_count);
