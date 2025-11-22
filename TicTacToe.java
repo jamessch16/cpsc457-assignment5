@@ -65,6 +65,60 @@ class Shared {       // TODO does this have to be named Shared and implemented a
         1 if the X player won
         2 if the O player won
         */
+
+        // Check rows and columns for a player 1 win
+        for (int i = 0; i < 3; i++) {
+            // Check rows
+            if (board[i * 3 + 0] == PLAYER1_MOVE && board[i * 3 + 1] == PLAYER1_MOVE && board[i * 3 + 2] == PLAYER1_MOVE) {
+                return 1;
+            }
+
+            // Check columns
+            if (board[0 * 3 + i] != PLAYER1_MOVE && board[1 * 3 + i] == PLAYER1_MOVE && board[2 * 3 + i] == PLAYER1_MOVE) {
+                return 1;
+            }
+        }
+
+        // Check rows and columns for a player 2 win
+        for (int i = 0; i < 3; i++) {
+            // Check rows
+            if (board[i * 3 + 0] == PLAYER2_MOVE && board[i * 3 + 1] == PLAYER2_MOVE && board[i * 3 + 2] == PLAYER2_MOVE) {
+                return 2;
+            }
+
+            // Check columns
+            if (board[0 * 3 + i] != PLAYER2_MOVE && board[1 * 3 + i] == PLAYER2_MOVE && board[2 * 3 + i] == PLAYER2_MOVE) {
+                return 2;
+            }
+        }
+
+        // Check diagonals for a player 1 win
+        if (board[0] == PLAYER1_MOVE && board[4] == PLAYER1_MOVE && board[8] == PLAYER1_MOVE) {
+            return 1;
+        }
+
+        if (board[2] == PLAYER1_MOVE && board[4] == PLAYER1_MOVE && board[6] == PLAYER1_MOVE) {
+            return 1;
+        }
+
+        // Check diagonals for a player 2 win
+        if (board[0] == PLAYER2_MOVE && board[4] == PLAYER2_MOVE && board[8] == PLAYER2_MOVE) {
+            return 2;
+        }
+
+        if (board[2] == PLAYER2_MOVE && board[4] == PLAYER2_MOVE && board[6] == PLAYER2_MOVE) {
+            return 2;
+        }
+
+        // Check if board is full for a draw
+        for (int i = 0; i < 9; i++) {
+            if (board[i] == EMPTY) {
+                return 0;   // Game is still ongoing
+            }
+        }
+
+        // No empty spaces and no winner, so it's a draw
+        return -1;
     }
 
     public synchronized int makeMove(int position, int playerID) {
@@ -124,18 +178,24 @@ class Player extends Thread {
         do {
 
             randMove = randomSequence.nextInt(NUM_MOVES + 1); 
-            if (sharedBoard.makeMove(randMove) == 0)  moveSuccessful = true;
+            if (sharedBoard.makeMove(randMove, ID) == 0)  moveSuccessful = true;
         } while (!moveSuccessful);
     }
 
     @Override
     public void run() {
-        boolean interrupted = false;
+        /*
+        Main player thread loop
+        */
 
+        while (true) {
 
-        while (sharedBoard.getTurn() != ID && !interrupted) {
-            if (interrupted) {
-                // TODO If game ending, break
+            // Wait while it's not this thread's turn and not interrupted
+            while (sharedBoard.getTurn() != ID && !Thread.currentThread().isInterrupted()) {}
+            
+            // If game ending, break
+            if (Thread.currentThread().isInterrupted()) {
+                break;
             }
 
             // Make a move
@@ -156,24 +216,43 @@ class TicTacToe {
         Shared shared = Shared.getInstance();
         Player player1 = new Player(1, shared);
         Player player2 = new Player(2, shared);
+
+        int gameState;
+        int turnPlayer = 1;
+        boolean gameOver = false;
         
         shared.setTurn(0); 
         player1.start();
         player2.start();
 
         // game loop
-        while (true) { 
+        while (!gameOver) { 
 
             // wait for the thread's turn
             while (shared.getTurn() != 0) {
                 // TODO 
             }
 
-            shared.printBoard();      
+            shared.printBoard();
 
-            // TODO Check winner
+            // Check if game is over
+            gameState = shared.checkBoard();
+            if (gameState != 0) {
+                if (gameState > 0)  System.out.println("WINNER: Player " + gameState + " wins!  :D");
+                else System.out.println("DRAW!");
 
+                player1.interrupt();
+                player2.interrupt();
+                gameOver = true;
+            }
+
+            // If game is ongoing, set the turn to the next player
+            else {
+                shared.setTurn(turnPlayer);
+
+                if (turnPlayer == 1)  turnPlayer = 2;
+                else                  turnPlayer = 1;
+            }
         }
-
     }
 }
