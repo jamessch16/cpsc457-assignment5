@@ -3,10 +3,10 @@ import java.util.Random;
 
 
 
-class Board {       // TODO does this have to be named Shared and implemented as in the assignment spec???
+class Shared {       // TODO does this have to be named Shared and implemented as in the assignment spec???
     // singleton shared board instance
 
-    private static Board instance = null;
+    private static Shared instance = null;
 
     private char board[];
     private int turn;
@@ -15,7 +15,7 @@ class Board {       // TODO does this have to be named Shared and implemented as
     private static final char PLAYER2_MOVE = 'O';
     private static final char EMPTY = '-';
 
-    private Board() {
+    private Shared() {
         if (instance != null) {
             throw new IllegalStateException("Use getInstance() to create Board instance");
         }
@@ -28,9 +28,9 @@ class Board {       // TODO does this have to be named Shared and implemented as
         }
     }
 
-    public static Board getInstance() {
+    public static Shared getInstance() {
         if (instance == null) {
-            instance = new Board();
+            instance = new Shared();
         }
 
         return instance;
@@ -67,7 +67,7 @@ class Board {       // TODO does this have to be named Shared and implemented as
         */
     }
 
-    public synchronized int makeMove(int position) {
+    public synchronized int makeMove(int position, int playerID) {
         /*
         Makes a move on the board at the given position for the given player.
         @param position The position to make the move (0-9).
@@ -103,10 +103,10 @@ class Board {       // TODO does this have to be named Shared and implemented as
 class Player extends Thread {
 
     private int ID;
-    private Board sharedBoard;
+    private Shared sharedBoard;
     private final int NUM_MOVES = 9;
 
-    public Player(int id, Board sharedBoard) {
+    public Player(int id, Shared sharedBoard) {
         this.ID = id;
         this.sharedBoard = sharedBoard;
     }
@@ -153,11 +153,11 @@ class TicTacToe {
 
     public static void main(String args[]) {
 
-        Board board = Board.getInstance();
-        Player player1 = new Player(1);
-        Player player2 = new Player(2);
+        Shared shared = Shared.getInstance();
+        Player player1 = new Player(1, shared);
+        Player player2 = new Player(2, shared);
         
-        board.setTurn(0); 
+        shared.setTurn(0); 
         player1.start();
         player2.start();
 
@@ -165,11 +165,11 @@ class TicTacToe {
         while (true) { 
 
             // wait for the thread's turn
-            while (board.getTurn() != 0) {
+            while (shared.getTurn() != 0) {
                 // TODO 
             }
 
-            board.printBoard();      
+            shared.printBoard();      
 
             // TODO Check winner
 
