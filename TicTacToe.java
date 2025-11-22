@@ -1,4 +1,7 @@
 
+import java.util.Random;
+
+
 
 class Board {       // TODO does this have to be named Shared and implemented as in the assignment spec???
     // singleton shared board instance
@@ -8,8 +11,8 @@ class Board {       // TODO does this have to be named Shared and implemented as
     private char board[];
     private int turn;
 
-    private static final char X = 'X';
-    private static final char O = 'O';
+    private static final char PLAYER1_MOVE = 'X';
+    private static final char PLAYER2_MOVE = 'O';
     private static final char EMPTY = '-';
 
     private Board() {
@@ -63,20 +66,84 @@ class Board {       // TODO does this have to be named Shared and implemented as
         2 if the O player won
         */
     }
+
+    public synchronized int makeMove(int position) {
+        /*
+        Makes a move on the board at the given position for the given player.
+        @param position The position to make the move (0-9).
+        @return 0 if the move was successful, 1 if the move was already taken, and -1 if the move is invalid.
+        */
+
+        // Validate inputs
+        if (position < 0 || position > 9) {
+            return -1;
+        }
+
+        if (playerID != 1 && playerID != 2) {
+            return -1;
+        }
+
+        // Check if position is already occupied
+        if (board[position] != EMPTY) {
+            return 1;
+        }
+
+        // Make the move
+        if (turn == 1) {
+            board[position] = PLAYER1_MOVE;
+        } 
+        else if (turn == 2) {
+            board[position] = PLAYER2_MOVE;
+        } 
+
+        return 0;
+    }
 }
 
 class Player extends Thread {
 
     private int ID;
+    private Board sharedBoard;
+    private final int NUM_MOVES = 9;
 
-    public Player(int id) {
+    public Player(int id, Board sharedBoard) {
         this.ID = id;
-        // TODO
+        this.sharedBoard = sharedBoard;
+    }
+
+    private void decideMove() {
+        /*
+        Pick a random move and submit it to the shared board
+        */
+
+        int randMove = 0;
+        Random randomSequence = new Random();
+        boolean moveSuccessful = false;
+
+        // Repeat until a valid move is made
+        do {
+
+            randMove = randomSequence.nextInt(NUM_MOVES + 1); 
+            if (sharedBoard.makeMove(randMove) == 0)  moveSuccessful = true;
+        } while (!moveSuccessful);
     }
 
     @Override
     public void run() {
-        // TODO
+        boolean interrupted = false;
+
+
+        while (sharedBoard.getTurn() != ID && !interrupted) {
+            if (interrupted) {
+                // TODO If game ending, break
+            }
+
+            // Make a move
+            decideMove();
+
+            // Set turn back to main thread
+            sharedBoard.setTurn(0); 
+        }
     }
 }
 
