@@ -7,17 +7,11 @@ import java.util.ArrayList;
  */
 
 class SharedIntegerArray {
-	private static ArrayList<Integer> primeNumbers;
-
-	static {
-		primeNumbers = new ArrayList<>();
-	}
+	private ArrayList<Integer> primeNumbers;
 
 	public SharedIntegerArray(int initialCapacity) {
 
-		// TODO SINGLETON DESIGN PATTERN
-
-
+		// TODO CONVERT TO SINGLETON DESIGN PATTERN
 		this.primeNumbers = new ArrayList<>(initialCapacity);
 	}
 
@@ -50,7 +44,7 @@ class SharedIntegerArray {
 		Prints the contents of the shared array.
 		*/
 		for (int i = 0; i < primeNumbers.size(); i++) {
-			System.out.print(i + " ");
+			System.out.print(primeNumbers.get(i) + " ");
 		}
 	}
 
@@ -73,11 +67,7 @@ class PrimeFinderThread extends Thread {
 		if (lowerBound > upperBound) {
 			throw new IllegalArgumentException("Lower bound must be less than or equal to upper bound.");
 		}
-
-		if (lowerBound < 1 || upperBound < 1) {
-			throw new IllegalArgumentException("Bounds must be non-negative.");
-		}
-
+		
 		// TODO VALIDATE INPUTS
 		
 		this.lowerBound = lowerBound;
@@ -161,22 +151,22 @@ public class PrimeFinder {
 			System.exit(1);
 		}
 
+		// Reduce thread count to be equal to range if more threads than numbers to check
+		if (thread_count > (max_bound - min_bound + 1)) {
+			thread_count = max_bound - min_bound + 1;
+		}
 
-
-		// TODO Handle case N > Range as in specifications
 		// TODO handle case that bounds are negative ie lower < 0 orupper < 0
 
+		// Create thread array and shared array
 		ArrayList<PrimeFinderThread> threads = new ArrayList<>(thread_count);
 		SharedIntegerArray sharedPrimes = new SharedIntegerArray(128);
 
 		// Find minimum subrange count and remainder 
 		nums_per_thread = Math.floorDiv((max_bound - min_bound + 1) , thread_count);
 		remainder = (max_bound - min_bound + 1) % thread_count;
-
-		// Initialize shared array
-		// TODO Singleton
 		
-		// Create threads with searching the subranges
+		// Create threads to search subranges
 		int threadLowerBound = min_bound;
 		int threadUpperBound;
 
